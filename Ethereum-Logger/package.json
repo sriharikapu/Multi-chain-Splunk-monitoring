@@ -1,0 +1,31 @@
+{
+  "name": "ethereum-logger",
+  "description": "Sample NodeJs web application",
+  "version": "0.0.1",
+  "private": true,
+  "devDependencies": {
+    "mocha": "5.0.0",
+    "unit.js": "2.0.0",
+    "supertest": "3.0.0"
+  },
+  "scripts": {
+    "test": "SPLUNK_HEC_TOKEN=1234 SPLUNK_HOST=localhost SPLUNK_PORT=8088 GETH_WS_HOST=localhost GETH_WS_PORT=8546 mocha --recursive tests --exit"
+  },
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "dotenv": "^5.0.1",
+    "ini": "^1.3.5",
+    "sleep": "^5.1.1",
+    "splunk-logging": "^0.9.3",
+    "web3": "^1.0.0-beta.34"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git-codecommit.us-east-1.amazonaws.com/v1/repos/Ethereum-Logger"
+  },
+  "author": "Ryan Moore",
+  "license": "ISC"
+}
