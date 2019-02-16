@@ -1,13 +1,11 @@
 import { Command, flags } from '@oclif/command';
+import cli from 'cli-ux';
+import * as inquirer from 'inquirer';
 
 export default class Hello extends Command {
-  static description = 'describe the command here';
+  static description = 'blah';
 
-  static examples = [
-    `$ buffigen hello
-hello world from ./src/hello.ts!
-`,
-  ];
+  static examples = [`$ buffigen init`];
 
   static flags = {
     help: flags.help({ char: 'h' }),
@@ -22,10 +20,18 @@ hello world from ./src/hello.ts!
   async run() {
     const { args, flags } = this.parse(Hello);
 
-    const name = flags.name || 'world';
-    this.log(`hello ${name} from ./src/commands/hello.ts`);
-    if (args.file && flags.force) {
-      this.log(`you input --force and --file: ${args.file}`);
-    }
+    const name = await cli.prompt('What is your name?');
+    this.log(`hello ${name}`);
+
+    const responses = await inquirer.prompt([
+      {
+        name: 'stage',
+        message: 'select a stage',
+        type: 'list',
+        choices: [{ name: 'development' }, { name: 'staging' }, { name: 'production' }],
+      },
+    ]);
+
+    this.log(JSON.stringify(responses));
   }
 }
