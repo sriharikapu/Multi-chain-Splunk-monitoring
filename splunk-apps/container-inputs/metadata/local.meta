@@ -1,0 +1,6 @@
+[inputs/http%3A%2F%2Fpoa]
+access = read : [ admin ], write : [ admin ]
+export = none
+owner = admin
+version = 7.2.3
+modtime = 1550339914.601442000

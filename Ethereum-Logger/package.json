@@ -9,7 +9,7 @@
     "supertest": "3.0.0"
   },
   "scripts": {
-    "test": "SPLUNK_HEC_TOKEN=1234 SPLUNK_HOST=localhost SPLUNK_PORT=8088 GETH_WS_HOST=localhost GETH_WS_PORT=8546 mocha --recursive tests --exit"
+    "start": "npm install && node app.js"
   },
   "main": "index.js",
   "directories": {
@@ -23,8 +23,7 @@
     "web3": "^1.0.0-beta.34"
   },
   "repository": {
-    "type": "git",
-    "url": "https://git-codecommit.us-east-1.amazonaws.com/v1/repos/Ethereum-Logger"
+    "type": "git"
   },
   "author": "Ryan Moore",
   "license": "ISC"
