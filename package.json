@@ -1,0 +1,13 @@
+{
+  "name": "ethdenver",
+  "version": "1.0.0",
+  "repository": "git@github.com:ziegfried/ethdenver.git",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "prettier": "^1.16.4"
+  },
+  "scripts": {
+    "format": "git ls-files | grep -E \"\\.(tsx?|es|jsx?|css|md|graphql)$\" | xargs prettier --write",
+    "format:verify": "git ls-files | grep -E \"\\.(tsx?|es|jsx?|css|md|graphql)$\" | xargs prettier --list-different"
+  }
+}
