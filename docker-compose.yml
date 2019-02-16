@@ -1,0 +1,61 @@
+version: '2'
+
+x-logging:
+  &default-logging
+  driver: "splunk"
+  options:
+    splunk-token: "12345678-ABCD-EFGH-IJKL-123456789012"
+    splunk-url: "https://localhost:18088"
+    splunk-insecureskipverify: "true"
+    splunk-verify-connection: "false"
+    splunk-format: "json"
+    tag: "{{.Name}}-{{.ID}}"
+
+networks:
+  buffi-poa:
+  buffi-pow:
+
+services:
+  splunk.example.com:
+    container_name: splunk.example.com
+    image: splunk/splunk:7.2.3
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_PASSWORD=changeme
+      - SPLUNK_HEC_TOKEN=12345678-ABCD-EFGH-IJKL-123456789012
+    networks:
+      - buffi-poa
+      - buffi-pow
+    ports:
+      - "18000:8000"
+      - "18088:8088"
+
+  pow.example.com:
+    image: ethereum/client-go
+    restart: on-failure
+    networks:
+      - buffi-pow
+    command: '--datadir=~/.ethereum/devchain --rpcapi "db,personal,eth,net,web3" --rpccorsdomain="*" --networkid=456719 --rpc --rpcaddr="0.0.0.0"'
+    volumes:
+      - ./files/password:/root/files/password:ro
+      - ./files/genesis.json:/root/files/genesis.json:ro
+      - ./files/keystore:/root/.ethereum/devchain/keystore:rw
+      - ./Ethereum-Logger/:/root/Ethereum-Logger
+    # ports:
+    #   - "30303:30303"
+    #   - "30303:30303/udp"
+    #   - "8545:8545"
+    logging: *default-logging
+
+  poa.example.com:
+    image: ethereum/client-go
+    restart: on-failure
+    networks:
+      - buffi-poa
+    volumes:
+      - ./files/password:/root/files/password:ro
+      - ./files/genesis.json:/root/files/genesis.json:ro
+      - ./files/keystore:/root/.ethereum/devchain/keystore:rw
+      - ./Ethereum-Logger/:/root/Ethereum-Logger
+    command: '--datadir=~/.ethereum/devchain --rpccorsdomain="*" --networkid=456719 --rpc'
+    logging: *default-logging
