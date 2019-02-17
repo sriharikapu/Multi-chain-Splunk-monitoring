@@ -33,7 +33,7 @@ networks:
 services:
   splunk.example.com:
     container_name: splunk.example.com
-    image: splunk/splunk:7.2.3
+    image: splunk/splunk:7.2.4
     environment:
       - SPLUNK_START_ARGS=--accept-license
       - SPLUNK_PASSWORD=changeme
