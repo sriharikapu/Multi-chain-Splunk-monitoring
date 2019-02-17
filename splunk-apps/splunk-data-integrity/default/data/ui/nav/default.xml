@@ -1,6 +1,0 @@
-<nav>
-    <view name="dataintegrity" default="true"/>
-    <view name="troubleshooting"/>
-    <view name="search"/>
-    <view name="adisetup"/>
-</nav>

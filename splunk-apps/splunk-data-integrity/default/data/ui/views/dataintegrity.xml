@@ -1,4 +1,0 @@
-<?xml version="1.0"?>
-<view template="splunk-data-integrity:/templates/dataintegrity.html" type="html">
-	<label>Data Integrity</label>
-</view>

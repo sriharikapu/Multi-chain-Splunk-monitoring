@@ -1,4 +1,0 @@
-<?xml version="1.0"?>
-<view template="splunk-data-integrity:/templates/adisetup.html" type="html">
-    <label>Setup</label>
-</view>

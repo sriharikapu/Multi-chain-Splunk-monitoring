@@ -1,0 +1,59 @@
+<form theme="dark">
+  <label>Ledger Query</label>
+  <description>Function</description>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="dropdown" token="t_function">
+      <label>Function</label>
+      <choice value="getBlockByNumber">Get Block By Number</choice>
+      <choice value="getBlockByHash">Get Block By Hash</choice>
+      <choice value="getTransactionByHash">Get Transaction By Hash</choice>
+      <choice value="getBalance">Get Balance</choice>
+      <choice value="getTransactionCount">Get Transaction Count</choice>
+      <choice value="getBlockTransactionCountByHash">Get Block TransactionCountByHash</choice>
+      <choice value="getBlockTransactionCountByNumber">Get Block TransactionCountByNumber</choice>
+      <choice value="getTransactionReceipt">Get Transaction Receipt</choice>
+      <choice value="blockNumber">Block Number</choice>
+      <choice value="hashrate">Hashrate</choice>
+      <choice value="mining">Mining</choice>
+      <choice value="coinbase">Coinbase</choice>
+      <choice value="syncing">Syncing</choice>
+      <choice value="net_peerCount">Peer Count</choice>
+      <choice value="net_listening">Listening</choice>
+      <default>getBlockByNumber</default>
+      <initialValue>getBlockByNumber</initialValue>
+    </input>
+    <input type="text" token="t_node">
+      <label>Node to Query</label>
+      <default>http://127.0.0.1:8545</default>
+      <initialValue>http://127.0.0.1:8545</initialValue>
+      <prefix>host=</prefix>
+    </input>
+    <input type="text" token="t_arg">
+      <label>Arg</label>
+      <default></default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <event>
+        <search>
+          <query>| geth $t_function$ $t_node$ $t_arg$</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="list.drilldown">none</option>
+        <option name="list.wrap">1</option>
+        <option name="maxLines">5</option>
+        <option name="raw.drilldown">full</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">0</option>
+        <option name="table.drilldown">all</option>
+        <option name="table.sortDirection">asc</option>
+        <option name="table.wrap">1</option>
+        <option name="type">list</option>
+      </event>
+    </panel>
+  </row>
+</form>

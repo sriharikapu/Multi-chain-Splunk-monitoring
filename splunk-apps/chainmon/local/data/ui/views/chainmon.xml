@@ -1,5 +1,5 @@
 <form theme="dark">
-  <label>Ethstats'ish</label>
+  <label>Ethstats....ish</label>
   <fieldset submitButton="false">
     <input type="time" searchWhenChanged="true" token="global_time_tok">
       <label>Time Range</label>
@@ -53,10 +53,8 @@
     <panel>
       <single>
         <search>
-          <query>index="po*" source="eth_stats_server://ethstats" "stats.hashrate"="*" 
-| rename id AS Node 
- 
-| timechart partial=f dc(Node) as Peers</query>
+          <query>index="po*" source="eth_stats_server*" 
+| stats dc(id) as Peers</query>
           <earliest>-24h@h</earliest>
           <latest>now</latest>
           <sampleRatio>1</sampleRatio>
@@ -88,7 +86,7 @@
     <panel>
       <single>
         <search>
-          <query>index="po*" source="eth_stats_server://ethstats" 
+          <query>index="po*" source="eth_stats_server*" 
 | rename id AS Node 
 | stats latest("stats.uptime") as uptime</query>
           <earliest>-60m@m</earliest>
@@ -122,7 +120,7 @@
     <panel>
       <single>
         <search>
-          <query>index="po*" source="eth_stats_server://ethstats"   | rename id AS Node   | timechart partial=f avg(latency)</query>
+          <query>index="po*" source="eth_stats_server*"   | rename id AS Node   | timechart partial=f avg(latency)</query>
           <earliest>-1h</earliest>
           <latest>now</latest>
           <sampleRatio>1</sampleRatio>
@@ -173,7 +171,7 @@
     <panel>
       <table>
         <search>
-          <query>index="po*" source="eth_stats_server://ethstats" 
+          <query>index="po*" source="eth_stats_server*" 
 | rename id AS Node 
  
 | eventstats max(block.number) as maxBlock 
