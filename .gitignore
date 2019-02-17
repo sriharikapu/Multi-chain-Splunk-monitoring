@@ -4,4 +4,5 @@ node_modules
 /ethlogger/build
 /ethlogger/abi
 *.swp
-/dapps/truffle-test/build
+/dapps/**/build
+package-lock.json

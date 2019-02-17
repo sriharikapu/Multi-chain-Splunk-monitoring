@@ -102,10 +102,13 @@ services:
       - ./files/init.sh:/root/init.sh
     entrypoint: /root/init.sh
     logging: *default-logging
-    command: 'secret@splunk.example.com:9002 --datadir=~/.ethereum --rpcapi "db,personal,eth,net,web3" --rpccorsdomain="*" --networkid=59206 --rpc --rpcaddr="0.0.0.0" --ws --wsaddr="0.0.0.0" --wsorigins "*" --miner.etherbase="0x69eff55dce156926164e276ed03484672ec84fbb" --unlock "0x69eff55dce156926164e276ed03484672ec84fbb" --mine --password "/root/.ethereum/password"'
+    command: 'secret@splunk.example.com:9002 --datadir=~/.ethereum --rpcapi "db,personal,eth,net,web3" --rpccorsdomain="*" --networkid=53324 --rpc --rpcaddr="0.0.0.0" --ws --wsaddr="0.0.0.0" --wsorigins "*" --miner.etherbase="0x69eff55dce156926164e276ed03484672ec84fbb" --unlock "0x69eff55dce156926164e276ed03484672ec84fbb" --mine --password "/root/.ethereum/password"'
     depends_on:
       splunk.example.com:
         condition: service_healthy
+    ports:
+      - '9546:8546'
+      - '9545:8545'
 
   eth-logger-poa:
     build:
