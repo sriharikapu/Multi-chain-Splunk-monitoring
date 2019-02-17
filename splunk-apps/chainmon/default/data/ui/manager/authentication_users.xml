@@ -1,0 +1,8 @@
+<endpoint name="authentication/users" showAppContext="1" template="pages/system.html">
+   <header>Users</header>
+   <capabilities>
+   <read>edit_user</read>
+   </capabilities>
+</endpoint>
+
+

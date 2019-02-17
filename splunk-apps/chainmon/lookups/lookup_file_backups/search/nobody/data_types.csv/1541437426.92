@@ -1,0 +1,10 @@
+Solution Area,Source,DataType,Count
+TBD,System Metrics,Infrastructure,1
+TBD,Server Logs,Infrastructure,1
+TBD,Network Stats,Infrastructure,1
+TBD,Node Logs,Nodes,1
+TBD,Node Metrics,Nodes,1
+TBD,Node Queries,Nodes,1
+TBD,Ledger Transactions,Ledger Data,1
+TBD,Ledger Blocks,Ledger Data,1
+TBD,Ledger Metrics,Ledger Data,1

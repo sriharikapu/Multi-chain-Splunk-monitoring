@@ -1,0 +1,96 @@
+const readline = require('readline');
+const Eth = require('ethjs');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+var eth, searchArgs, command;
+
+
+// Main loop waiting for commands from splunk
+rl.on('line', (input) => {
+  if (input.indexOf("chunk") != -1) {
+    // Not sure why but a newline is needed
+    rl.write("\n");
+  }
+  else if (input.indexOf("getinfo") != -1) {
+    // This is the Initial Message from splunk v2
+
+    command = JSON.parse(input).searchinfo.args[0]
+    searchArgs = arrToMap(JSON.parse(input).searchinfo.args.slice(1));
+    // Now we tell splunk what type of command it is
+    var meta = '{"generating": true, "type": "events"}'
+    eth = new Eth(new Eth.HttpProvider(searchArgs.host));
+    console.log(`chunked 1.0,${meta.length},0\n${meta}`);
+  } else if (input.indexOf("execute") != -1) {
+    // Splunk is ready for the data
+    // Its in csv format
+
+    switch (command) {
+      case 'getBlock':
+        eth.getBlockByNumber(searchArgs.blockNumber, true, sendResponse(err, block)) 
+        break;
+      case 'getTransaction':
+        eth.getTransactionByHash(searchArgs.transactionHash, sendResponse(err, transaction)) 
+        break;
+      case 'getBalance':
+        eth.getBalance(searchArgs.wallet,"latest", (err, balance) => sendResponse(err,{ 'wallet': searchArgs.address, 'balance': Eth.fromWei(balance,'ether')}));
+        break;
+      case 'getTransactionCount':
+        eth.getTransactionCount(search.Args.address,"latest", (err,count) => sendResponse(err,{ 'address': searchArgs.address, 'count':count.toString(10)}));
+        break;
+      case 'getTransactionCountByHash':
+        eth.getBlockTransactionCountByHash(searchArgs.hash, (err,count) => sendResponse(err,{ 'address': searchArgs.hash, 'count':count.toString(10)}));
+        break;
+      case 'getTransactionReceipt':
+        eth.getTransactionReceipt(searchArgs.hash, (err,receipt) => sendResponse(err,receipt));
+        break;
+      case 'blockNumber':
+        eth.blockNumber((err,blockNumber) => sendResponse(err, {'blockNumber' :blockNumber.toString(10)}));
+        break;
+      case 'hashrate':
+        eth.hashrate((err,hashrate) => sendResponse(err,{'hashrate': hashrate.toString(10)}));
+        break;
+      case 'mining':
+        eth.mining((err,mining) => sendResponse(err,{'mining': mining}));
+        break;
+      case 'coinbase':
+        eth.coinbase((err,coinbase) => sendResponse(err,{'coinbase':coinbase}));
+        break;
+      case 'syncing':
+        eth.syncing((err,syncing) => sendResponse(err,{'syncing': syncing}));
+        break;
+      case 'net_peerCount':
+        eth.net_peerCount((err,peerCount) => sendResponse(err,{'net_peerCount': peerCount.toString(10)}));
+        break;
+      case 'net_listening':
+        eth.net_listening((err,listening) => sendResponse(err,{'net_listening': listening}));
+        break;
+      default:
+        sendResponse(null,{'error':'Unknown Command', 'command': command})
+    }
+  }
+});
+
+var sendResponse = function(err,result){
+  if (err != null){
+    output = `_raw\n"${escCsv(JSON.stringify(err))}"`
+  } else {
+    output = `_raw\n"${escCsv(JSON.stringify(result))}"`
+  }
+  console.log(`chunked 1.0,21,${output.length}\n{ "finished": true }\n${output}`)
+}
+
+var escCsv = function (input) {
+  return input = input.replace(/"/g, '""');
+}
+
+var arrToMap = function (args) {
+  return args.reduce(function (map, obj) {
+    obj = obj.split("=")
+    map[obj[0]] = obj[1];
+    return map;
+  }, {});
+}

@@ -1,0 +1,575 @@
+<form theme="dark">
+  <label>Ethstats'ish</label>
+  <fieldset submitButton="false">
+    <input type="time" searchWhenChanged="true" token="global_time_tok">
+      <label>Time Range</label>
+      <default>
+        <earliest>-24h</earliest>
+        <latest>now</latest>
+      </default>
+      <change>
+        <eval token="now">now()</eval>
+        <eval token="relative_earliest">relative_time($now$, $earliest$)</eval>
+        <eval token="relative_latest">relative_time($now$, $latest$)</eval>
+        <set token="timeComp_0">-d</set>
+        <eval token="earliest_0">if(isnum($earliest$), relative_time($earliest$, $timeComp_0$), relative_time($relative_earliest$, $timeComp_0$))</eval>
+        <eval token="latest_0">if(isnum($latest$), relative_time($latest$, $timeComp_0$), relative_time($relative_latest$, $timeComp_0$))</eval>
+        <set token="timeComp_1">-1d</set>
+        <eval token="earliest_1">if(isnum($earliest$), relative_time($earliest$, $timeComp_1$), relative_time($relative_earliest$, $timeComp_1$))</eval>
+        <eval token="latest_1">if(isnum($latest$), relative_time($latest$, $timeComp_1$), relative_time($relative_latest$, $timeComp_1$))</eval>
+        <set token="timeComp_2">-1d</set>
+        <eval token="earliest_2">if(isnum($earliest$), relative_time($earliest$, $timeComp_2$), relative_time($relative_earliest$, $timeComp_2$))</eval>
+        <eval token="latest_2">if(isnum($latest$), relative_time($latest$, $timeComp_2$), relative_time($relative_latest$, $timeComp_2$))</eval>
+        <set token="timeComp_3">-1d</set>
+        <eval token="earliest_3">if(isnum($earliest$), relative_time($earliest$, $timeComp_3$), relative_time($relative_earliest$, $timeComp_3$))</eval>
+        <eval token="latest_3">if(isnum($latest$), relative_time($latest$, $timeComp_3$), relative_time($relative_latest$, $timeComp_3$))</eval>
+        <set token="timeComp_5">-1d</set>
+        <eval token="earliest_5">if(isnum($earliest$), relative_time($earliest$, $timeComp_5$), relative_time($relative_earliest$, $timeComp_5$))</eval>
+        <eval token="latest_5">if(isnum($latest$), relative_time($latest$, $timeComp_5$), relative_time($relative_latest$, $timeComp_5$))</eval>
+        <set token="timeComp_6">-1d</set>
+        <eval token="earliest_6">if(isnum($earliest$), relative_time($earliest$, $timeComp_6$), relative_time($relative_earliest$, $timeComp_6$))</eval>
+        <eval token="latest_6">if(isnum($latest$), relative_time($latest$, $timeComp_6$), relative_time($relative_latest$, $timeComp_6$))</eval>
+      </change>
+    </input>
+    <input type="dropdown">
+      <label>Time Span</label>
+      <choice value="auto">auto</choice>
+      <choice value="5s">5s</choice>
+      <choice value="10s">10s</choice>
+      <choice value="30s">30s</choice>
+      <choice value="1m">1m</choice>
+      <choice value="5m">5m</choice>
+      <choice value="10m">10m</choice>
+      <choice value="30m">30m</choice>
+      <choice value="1h">1h</choice>
+      <default>auto</default>
+      <change>
+        <eval token="timechart_span">if($value$ == "auto", "", "span=".$value$)</eval>
+        <eval token="mstats_span">"span=".$value$</eval>
+      </change>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <single>
+        <search>
+          <query>index="po*" source="eth_stats_server://ethstats" "stats.hashrate"="*" 
+| rename id AS Node 
+ 
+| timechart partial=f dc(Node) as Peers</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="height">99</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="refresh.display">none</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="trendInterval">-60m</option>
+        <option name="underLabel"># of Peers over 24hr</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <search>
+          <query>index="po*" source="eth_stats_server://ethstats" 
+| rename id AS Node 
+| stats latest("stats.uptime") as uptime</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="height">93</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0x53a051"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="refresh.display">none</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="underLabel">Overall Uptime</option>
+        <option name="unit">%</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">0</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <search>
+          <query>index="po*" source="eth_stats_server://ethstats"   | rename id AS Node   | timechart partial=f avg(latency)</query>
+          <earliest>-1h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>7s</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="height">95</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[100,200,300]</option>
+        <option name="refresh.display">none</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="trendInterval">-10m</option>
+        <option name="underLabel">Avg Latency All Nodes</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <search>
+          <query>index="po*" sourcetype=transaction | stats count</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="rangeColors">["0x53a051","0xdc4e41","0xf1813f","0xf8be34","0x53a051"]</option>
+        <option name="rangeValues">[0,10,20,30]</option>
+        <option name="underLabel">Transactions</option>
+        <option name="useColors">1</option>
+        <drilldown>
+          <link target="_blank">/app/search/transactions</link>
+        </drilldown>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <query>index="po*" source="eth_stats_server://ethstats" 
+| rename id AS Node 
+ 
+| eventstats max(block.number) as maxBlock 
+| stats latest(host) AS host
+    latest(info.node) AS "Node Type" avg(latency) AS "Avg Latency" sparkline(avg(latency)) as "LatencyTrend" avg(stats.hashrate) AS "Avg Mining Rate" latest(stats.peers) AS Peers latest(block.number) AS "Last Block" latest(stats.active) AS Active latest(stats.uptime) AS Uptime by Node maxBlock 
+| eval "Blocks Behind"=maxBlock-'Last Block'
+| table host Node "Avg Latency" "LatencyTrend" "Avg Mining Rate" Peers * | fields - maxBlock</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>4s</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">none</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="latency">
+          <colorPalette type="list">[#53A051,#F8BE34,#F1813F,#DC4E41]</colorPalette>
+          <scale type="threshold">100,200,400</scale>
+        </format>
+        <format type="color" field="Uptime">
+          <colorPalette type="list">[#DC4E41,#F1813F,#F8BE34,#B6C75A,#53A051]</colorPalette>
+          <scale type="threshold">90,95,97,99</scale>
+        </format>
+        <format type="number" field="Avg Latency">
+          <option name="unit">ms</option>
+        </format>
+        <format type="color" field="Avg Latency">
+          <colorPalette type="list">[#53A051,#F8BE34,#F1813F,#DC4E41]</colorPalette>
+          <scale type="threshold">99,120,200</scale>
+        </format>
+        <format type="number" field="Avg Mining Rate">
+          <option name="precision">0</option>
+        </format>
+        <format type="color" field="Avg Mining Rate">
+          <colorPalette type="minMidMax" maxColor="#3C444D" midColor="#666666" minColor="#AF575A"></colorPalette>
+          <scale type="minMidMax" midType="percentile" midValue="50"></scale>
+        </format>
+        <format type="color" field="Late">
+          <colorPalette type="minMidMax" maxColor="#AF575A" minColor="#3C444D"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+        <format type="color" field="Blocks Behind">
+          <colorPalette type="minMidMax" maxColor="#AF575A" minColor="#3C444D"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+        <format field="LatencyTrend" type="sparkline">
+          <option name="type">bar</option>
+          <option name="colorMap">
+            <option name="160:">#ff9900</option>
+            <option name=":159">#339933</option>
+          </option>
+        </format>
+        <drilldown>
+          <set token="t_host">$click.value$</set>
+          <unset token="t_host_errors"></unset>
+          <unset token="t_client_errors"></unset>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row depends="$t_host$">
+    <panel>
+      <title>Hostname</title>
+      <single>
+        <search>
+          <query>| makeresults | eval node="$t_host$" | table node</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">all</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051", "0x0877a6", "0xf8be34", "0xf1813f", "0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+        <drilldown>
+          <link target="_blank">http://34.238.28.122:8000/en-US/app/search/search?q=search%2520index%253Dmain%2520OR%2520index%253Dgeth%2520host%253D$t_host$&amp;earliest=-24h&amp;latest=now&amp;sid=1541189163.17508&amp;display.page.search.mode=smart&amp;dispatch.sample_ratio=1&amp;workload_pool=</link>
+        </drilldown>
+      </single>
+    </panel>
+    <panel>
+      <title>Host errors</title>
+      <single>
+        <search>
+          <query>index=main host=$t_host$ error OR fail* OR warn* OR crit* OR fatal* 
+| stats count</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">all</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[0,20,50]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+        <drilldown>
+          <set token="t_host_errors">$click.name$</set>
+        </drilldown>
+      </single>
+    </panel>
+    <panel>
+      <title>Client errors and warnings</title>
+      <single>
+        <search>
+          <query>index=geth host=$t_host$ $t_log_level$ | stats count</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">all</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[0,10,20]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+        <drilldown>
+          <set token="t_client_errors">$click.name$</set>
+        </drilldown>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$t_host_errors$">
+      <title>Errors and Failures</title>
+      <event>
+        <search>
+          <query>index=main host=$t_host$ error OR fail* OR warn* OR crit* OR fatal*</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="list.drilldown">none</option>
+        <option name="list.wrap">1</option>
+        <option name="maxLines">5</option>
+        <option name="raw.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">0</option>
+        <option name="table.drilldown">all</option>
+        <option name="table.sortDirection">asc</option>
+        <option name="table.wrap">1</option>
+        <option name="type">raw</option>
+      </event>
+    </panel>
+    <panel depends="$t_client_errors$">
+      <title>Client Logs</title>
+      <input type="multiselect" token="t_log_level">
+        <label>Log Level</label>
+        <choice value="ERROR">Error</choice>
+        <choice value="WARN">Warn</choice>
+        <choice value="INFO">Info</choice>
+        <choice value="DEBUG">Debug</choice>
+        <choice value="DETAIL">Detail</choice>
+        <default>ERROR,WARN</default>
+        <initialValue>ERROR,WARN</initialValue>
+        <delimiter> OR </delimiter>
+      </input>
+      <event>
+        <search>
+          <query>index=geth host=$t_host$ $t_log_level$</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">12</option>
+        <option name="list.drilldown">none</option>
+        <option name="list.wrap">1</option>
+        <option name="maxLines">10</option>
+        <option name="raw.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">0</option>
+        <option name="table.drilldown">none</option>
+        <option name="table.sortDirection">asc</option>
+        <option name="table.wrap">1</option>
+        <option name="type">raw</option>
+      </event>
+    </panel>
+  </row>
+  <row depends="$t_host$">
+    <panel>
+      <chart>
+        <title>cpu.idle</title>
+        <search>
+          <query>| mstats avg(_value) prestats=true WHERE "host"=$t_host$ AND metric_name="cpu.idle" AND "index"="em_metrics" $mstats_span$
+| timechart avg(_value) as "Avg" $timechart_span$</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisY.abbreviation">auto</option>
+        <option name="charting.axisY.includeZero">1</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">connect</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Avg":"#a65c7d"}</option>
+        <option name="charting.gridLinesX.showMajorLines">1</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>load.shortterm</title>
+        <search>
+          <query>| mstats avg(_value) as "Avg" WHERE "host"=$t_host$ AND metric_name="load.shortterm" AND "index"="em_metrics" $mstats_span$
+| append [
+    | mstats avg(_value) as "Avg (-1d)" WHERE "host"=$t_host$ AND metric_name="load.shortterm" AND "index"="em_metrics" earliest=$earliest_1$ latest=$latest_1$ $mstats_span$
+    | eval _time = round(relative_time(_time, "+1d"))
+]
+| timechart first("Avg") as "Avg", first("Avg (-1d)") as "Avg (-1d)" $timechart_span$</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisY.abbreviation">auto</option>
+        <option name="charting.axisY.includeZero">1</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">connect</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Avg":"#a65c7d","Avg (-1d)":"#C18EA5"}</option>
+        <option name="charting.fieldDashStyles">{"Avg (-1d)":"shortDot"}</option>
+        <option name="charting.gridLinesX.showMajorLines">1</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="height">250</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>memory.free</title>
+        <search>
+          <query>| mstats avg(_value) as "Avg" WHERE "host"=$t_host$ AND metric_name="memory.free" AND "index"="em_metrics" $mstats_span$
+| append [
+    | mstats avg(_value) as "Avg (-1d)" WHERE "host"=$t_host$ AND metric_name="memory.free" AND "index"="em_metrics" earliest=$earliest_2$ latest=$latest_2$ $mstats_span$
+    | eval _time = round(relative_time(_time, "+1d"))
+]
+| timechart first("Avg") as "Avg", first("Avg (-1d)") as "Avg (-1d)" $timechart_span$</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisY.abbreviation">auto</option>
+        <option name="charting.axisY.includeZero">1</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">connect</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Avg":"#a65c7d","Avg (-1d)":"#C18EA5"}</option>
+        <option name="charting.fieldDashStyles">{"Avg (-1d)":"shortDot"}</option>
+        <option name="charting.gridLinesX.showMajorLines">1</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">none</option>
+      </chart>
+    </panel>
+  </row>
+  <row depends="$t_host$">
+    <panel>
+      <chart>
+        <title>disk.io_time.io_time</title>
+        <search>
+          <query>| mstats avg(_value) as "Avg" WHERE "host"=$t_host$ AND metric_name="disk.io_time.io_time" AND "index"="em_metrics" $mstats_span$
+| append [
+    | mstats avg(_value) as "Avg (-1d)" WHERE "host"=$t_host$ AND metric_name="disk.io_time.io_time" AND "index"="em_metrics" earliest=$earliest_3$ latest=$latest_3$ $mstats_span$
+    | eval _time = round(relative_time(_time, "+1d"))
+]
+| timechart first("Avg") as "Avg", first("Avg (-1d)") as "Avg (-1d)" $timechart_span$</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisY.abbreviation">auto</option>
+        <option name="charting.axisY.includeZero">1</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">connect</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Avg":"#a65c7d","Avg (-1d)":"#C18EA5"}</option>
+        <option name="charting.fieldDashStyles">{"Avg (-1d)":"shortDot"}</option>
+        <option name="charting.gridLinesX.showMajorLines">1</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">none</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>disk.time.read</title>
+        <search>
+          <query>| mstats avg(_value) prestats=true WHERE "host"=$t_host$ AND metric_name="disk.time.read" AND "index"="em_metrics" $mstats_span$
+| timechart avg(_value) as "Avg" $timechart_span$</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisY.abbreviation">auto</option>
+        <option name="charting.axisY.includeZero">1</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">connect</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Avg":"#a65c7d"}</option>
+        <option name="charting.gridLinesX.showMajorLines">1</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">none</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>disk.time.write</title>
+        <search>
+          <query>| mstats avg(_value) as "Avg" WHERE "host"=$t_host$ AND metric_name="disk.time.write" AND "index"="em_metrics" $mstats_span$
+| append [
+    | mstats avg(_value) as "Avg (-1d)" WHERE "host"=$t_host$ AND metric_name="disk.time.write" AND "index"="em_metrics" earliest=$earliest_5$ latest=$latest_5$ $mstats_span$
+    | eval _time = round(relative_time(_time, "+1d"))
+]
+| timechart first("Avg") as "Avg", first("Avg (-1d)") as "Avg (-1d)" $timechart_span$</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisY.abbreviation">auto</option>
+        <option name="charting.axisY.includeZero">1</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">connect</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Avg":"#a65c7d","Avg (-1d)":"#C18EA5"}</option>
+        <option name="charting.fieldDashStyles">{"Avg (-1d)":"shortDot"}</option>
+        <option name="charting.gridLinesX.showMajorLines">1</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">none</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>df.free</title>
+        <search>
+          <query>| mstats avg(_value) as "Avg" WHERE "host"=$t_host$ AND metric_name="df.free" AND "index"="em_metrics" $mstats_span$
+| append [
+    | mstats avg(_value) as "Avg (-1d)" WHERE "host"=$t_host$ AND metric_name="df.free" AND "index"="em_metrics" earliest=$earliest_6$ latest=$latest_6$ $mstats_span$
+    | eval _time = round(relative_time(_time, "+1d"))
+]
+| timechart first("Avg") as "Avg", first("Avg (-1d)") as "Avg (-1d)" $timechart_span$</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisY.abbreviation">auto</option>
+        <option name="charting.axisY.includeZero">1</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">connect</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Avg":"#a65c7d","Avg (-1d)":"#C18EA5"}</option>
+        <option name="charting.fieldDashStyles">{"Avg (-1d)":"shortDot"}</option>
+        <option name="charting.gridLinesX.showMajorLines">1</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">none</option>
+      </chart>
+    </panel>
+  </row>
+</form>

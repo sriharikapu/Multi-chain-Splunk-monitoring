@@ -1,0 +1,41 @@
+[app/ui]
+version = 7.2.0
+modtime = 1545337038.937451000
+
+[app/launcher]
+version = 7.2.0
+modtime = 1545337038.938593000
+
+[views/random_searchs_dashboards]
+owner = house
+version = 7.2.0
+modtime = 1546967950.796779000
+
+[views/hyperledger_fabric_architecture]
+owner = house
+version = 7.2.0
+modtime = 1546894974.197348000
+
+[props/_json/EXTRACT-container_id]
+access = read : [ * ], write : [ admin, power ]
+export = system
+owner = house
+version = 7.2.0
+modtime = 1546972390.423843000
+
+[lookups/hlf_containers]
+owner = house
+version = 7.2.0
+modtime = 1546972263.390888000
+
+[transforms/container_info]
+export = system
+owner = house
+version = 7.2.0
+modtime = 1546972334.175327000
+
+[props/source%3A%3Ahttp%3Ahyperledger_docker/LOOKUP-hlf_container_info]
+export = system
+owner = house
+version = 7.2.0
+modtime = 1546972586.581700000

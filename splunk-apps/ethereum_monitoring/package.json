@@ -1,0 +1,23 @@
+{
+  "name": "ethereum_monitoring",
+  "version": "0.1.0",
+  "description": "Splunk App for monitoring ethereum",
+  "main": " ",
+  "bin": {
+    "ethereum_monitoring": "geth.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ethereum",
+    "splunk"
+  ],
+  "author": "Ryan Moore",
+  "license": "ISC",
+  "dependencies": {
+    "ethjs": "^0.4.0",
+    "splunk-sdk": "^1.8.4",
+    "ws": "^6.1.0"
+  }
+}
