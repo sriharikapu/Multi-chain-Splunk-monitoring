@@ -35,7 +35,6 @@ services:
       - ./splunk-apps/container-inputs:/opt/splunk/etc/apps/container-inputs:rw
       - ./splunk-apps/ethereum_monitoring:/opt/splunk/etc/apps/ethereum_monitoring:rw
       - ./splunk-apps/metrics_explorer:/opt/splunk/etc/apps/metrics_explorer:rw
-      - ./splunk-apps/splunk-data-integrity:/opt/splunk/etc/apps/splunk-data-integrity:rw
       - ./splunk-apps/splunk-for-hyperledger-fabric:/opt/splunk/etc/apps/splunk-for-hyperledger-fabric:rw
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:8000']
