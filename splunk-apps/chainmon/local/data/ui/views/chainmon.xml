@@ -1,5 +1,6 @@
 <form theme="dark">
   <label>Ethstats....ish</label>
+  <description>Select Network</description>
   <fieldset submitButton="false">
     <input type="time" searchWhenChanged="true" token="global_time_tok">
       <label>Time Range</label>
@@ -48,12 +49,18 @@
         <eval token="mstats_span">"span=".$value$</eval>
       </change>
     </input>
+    <input type="dropdown" token="host">
+      <label>Network</label>
+      <choice value="estats_pow">Pow</choice>
+      <choice value="estats_poa">Poa</choice>
+      <default>estats_poa</default>
+    </input>
   </fieldset>
   <row>
     <panel>
       <single>
         <search>
-          <query>index="po*" source="eth_stats_server*" 
+          <query>index="po*" source="eth_stats_server*" host=$host$
 | stats dc(id) as Peers</query>
           <earliest>-24h@h</earliest>
           <latest>now</latest>
@@ -86,7 +93,7 @@
     <panel>
       <single>
         <search>
-          <query>index="po*" source="eth_stats_server*" 
+          <query>index="po*" source="eth_stats_server*" host=$host$
 | rename id AS Node 
 | stats latest("stats.uptime") as uptime</query>
           <earliest>-60m@m</earliest>
@@ -120,7 +127,7 @@
     <panel>
       <single>
         <search>
-          <query>index="po*" source="eth_stats_server*"   | rename id AS Node   | timechart partial=f avg(latency)</query>
+          <query>index="po*" source="eth_stats_server*"  host=$host$ | rename id AS Node   | timechart partial=f avg(latency)</query>
           <earliest>-1h</earliest>
           <latest>now</latest>
           <sampleRatio>1</sampleRatio>
@@ -152,13 +159,14 @@
     <panel>
       <single>
         <search>
-          <query>index="po*" sourcetype=transaction | stats count</query>
+          <query>index="po*" sourcetype=transaction host=$host$ | stats count</query>
           <earliest>$global_time_tok.earliest$</earliest>
           <latest>$global_time_tok.latest$</latest>
         </search>
         <option name="drilldown">all</option>
         <option name="rangeColors">["0x53a051","0xdc4e41","0xf1813f","0xf8be34","0x53a051"]</option>
         <option name="rangeValues">[0,10,20,30]</option>
+        <option name="refresh.display">progressbar</option>
         <option name="underLabel">Transactions</option>
         <option name="useColors">1</option>
         <drilldown>
@@ -171,7 +179,7 @@
     <panel>
       <table>
         <search>
-          <query>index="po*" source="eth_stats_server*" 
+          <query>index="po*" source="eth_stats_server*" host=$host$ 
 | rename id AS Node 
  
 | eventstats max(block.number) as maxBlock 
