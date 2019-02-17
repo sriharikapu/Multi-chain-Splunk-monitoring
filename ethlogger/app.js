@@ -7,14 +7,19 @@ const ini = require('ini');
 const abiDecoder = require('abi-decoder');
 
 function loadABIs() {
-  console.log('Loading ABIs...');
-  const abis = fs.readdirSync(path.join(__dirname, 'abi'));
+  const abiBaseDir = path.join(__dirname, 'abi');
+  console.log('Loading ABIs from', abiBaseDir);
+  if (!fs.existsSync(abiBaseDir)) {
+    console.error('Error: ABI directory', abiBaseDir, 'does not exist');
+    process.exit(1);
+  }
+  const abis = fs.readdirSync(abiBaseDir);
   const abi = abis
     .map(file => {
       console.log('Adding to ABI:', file);
-      const contents = fs.readFileSync(path.join(__dirname, 'abi', file), { encoding: 'utf-8' });
+      const contents = fs.readFileSync(path.join(abiBaseDir, file), { encoding: 'utf-8' });
       const parsed = JSON.parse(contents);
-      return parsed.abi;
+      return parsed;
     })
     .reduce((a, b) => [...a, ...b], []);
   abiDecoder.addABI(abi);
