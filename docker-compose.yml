@@ -11,24 +11,9 @@ x-logging: &default-logging
     tag: '{{.Name}}-{{.ID}}'
 
 networks:
-  buffi-pow:
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.28.1.0/24
-          gateway: 172.28.1.1
   buffi-poa:
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.28.2.0/24
-          gateway: 172.28.2.1
+  buffi-pow:
   splunk:
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.28.3.0/24
-          gateway: 172.28.3.1
 
 services:
   splunk.example.com:
@@ -51,36 +36,13 @@ services:
       - ./splunk-apps/ethereum_monitoring:/opt/splunk/etc/apps/ethereum_monitoring:rw
       - ./splunk-apps/metrics_explorer:/opt/splunk/etc/apps/metrics_explorer:rw
       - ./splunk-apps/splunk-for-hyperledger-fabric:/opt/splunk/etc/apps/splunk-for-hyperledger-fabric:rw
-      - /etc/localtime:/etc/localtime:ro
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:8000']
-      interval: 5s
-      timeout: 5s
-      retries: 20
-
-  pow.bootnode.example.com:
-    image: ethereum/client-go
-    restart: on-failure
-    networks:
-      buffi-pow:
-        ipv4_address: 172.28.1.100
-        aliases:
-          - powbootnode
-    entrypoint: /root/init.sh
-    command: 'secret@splunk.example.com:9001 --nodekeyhex fb375414f31b25b61aa70bb33f356a7ebaf61983883274980aab9c3b92af6e82 --datadir="/root/.ethereum" --rpcapi "db,personal,eth,net,web3" --rpccorsdomain="*" --networkid=59206 --rpc --rpcaddr="0.0.0.0" --syncmode "full" --mine --minerthreads 1 --autodag'
-    volumes:
-      - ./files/keystore:/root/.ethereum/keystore
-      - ./files/pow.json:/root/genesis.json
-      - ./files/init.sh:/root/init.sh
-      - ./files/password:/root/password
-      - /etc/localtime:/etc/localtime:ro
-    logging: *default-logging
-    depends_on:
-      splunk.example.com:
-        condition: service_healthy
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   pow.example.com:
-    scale: 3
     image: ethereum/client-go
     restart: on-failure
     networks:
@@ -88,20 +50,23 @@ services:
         aliases:
           - pow
     entrypoint: /root/init.sh
-    command: 'secret@splunk.example.com:9001 --bootnodes="enode://fd542531647920bd370182731e94df6a744b11031e93956f9912e8863b239f91e40387cae46aac37f36b71ec1e119c2ce8a45a447650cfc96489ab6633b6bf51@172.28.1.100:30303" --datadir="/root/.ethereum" --rpcapi "db,personal,eth,net,web3" --rpccorsdomain="*" --networkid=59206 --rpc --rpcaddr="0.0.0.0" --ws --wsaddr="0.0.0.0" --wsorigins "*" --miner.etherbase="0x69eff55dce156926164e276ed03484672ec84fbb" --unlock "0x69eff55dce156926164e276ed03484672ec84fbb" --mine --minerthreads 1 --password "/root/password" --syncmode "full"'
+    command: 'secret@splunk.example.com:9001 --datadir=~/.ethereum --rpcapi "db,personal,eth,net,web3" --rpccorsdomain="*" --networkid=59206 --rpc --rpcaddr="0.0.0.0" --ws --wsaddr="0.0.0.0" --wsorigins "*" --miner.etherbase="0x69eff55dce156926164e276ed03484672ec84fbb" --unlock "0x69eff55dce156926164e276ed03484672ec84fbb" --mine --password "/root/.ethereum/password"'
     volumes:
       - ./files/keystore:/root/.ethereum/keystore
-      - ./files/pow.json:/root/genesis.json
+      - ./files/poa.json:/root/.ethereum/genesis.json
       - ./files/init.sh:/root/init.sh
-      - ./files/password:/root//password
-      - /etc/localtime:/etc/localtime:ro
-      - ./files/static-nodes-pow.json:/root/.ethereum/static-nodes.json
+      - ./files/password:/root/.ethereum/password
+    # ports:
+    #   - "30303:30303"
+    #   - "30303:30303/udp"
+    #   - "8545:8545"
     logging: *default-logging
     depends_on:
       splunk.example.com:
         condition: service_healthy
-      pow.bootnode.example.com:
-        condition: service_started
+    ports:
+      - '8546:8546'
+      - '8545:8545'
 
   eth-logger-pow:
     build:
@@ -122,30 +87,7 @@ services:
         condition: service_healthy
     logging: *default-logging
 
-  poa.bootnode.example.com:
-    image: ethereum/client-go
-    restart: on-failure
-    networks:
-      buffi-poa:
-        ipv4_address: 172.28.2.100
-        aliases:
-          - poabootnode
-    entrypoint: /root/init.sh
-    command: 'secret@splunk.example.com:9002 --nodekeyhex fb375414f31b25b61aa70bb33f356a7ebaf61983883274980aab9c3b92af6e82 --datadir=/root/.ethereum --rpcapi "db,personal,eth,net,web3" --rpccorsdomain="*" --networkid=53324 --rpc --rpcaddr="0.0.0.0" --miner.etherbase="0x69eff55dce156926164e276ed03484672ec84fbb" --unlock "0x69eff55dce156926164e276ed03484672ec84fbb" --mine --password "/root/password" --syncmode "full"'
-    volumes:
-      - ./files/keystore:/root/.ethereum/keystore
-      - ./files/poa.json:/root/genesis.json
-      - ./files/init.sh:/root/init.sh
-      - ./files/password:/root/password
-      - /etc/localtime:/etc/localtime:ro
-    logging: *default-logging
-    depends_on:
-      splunk.example.com:
-        condition: service_healthy
-      
-
   poa.example.com:
-    scale: 3
     image: ethereum/client-go
     restart: on-failure
     networks:
@@ -154,19 +96,18 @@ services:
           - poa
     volumes:
       - ./files/keystore:/root/.ethereum/keystore
-      - ./files/poa.json:/root/genesis.json
-      - ./files/password:/root/password
+      - ./files/poa.json:/root/.ethereum/genesis.json
+      - ./files/password:/root/.ethereum/password
       - ./files/init.sh:/root/init.sh
-      - /etc/localtime:/etc/localtime:ro
-      - ./files/static-nodes.json:/root/.ethereum/static-nodes.json
     entrypoint: /root/init.sh
     logging: *default-logging
-    command: 'secret@splunk.example.com:9002 --bootnodes="enode://fd542531647920bd370182731e94df6a744b11031e93956f9912e8863b239f91e40387cae46aac37f36b71ec1e119c2ce8a45a447650cfc96489ab6633b6bf51@172.28.2.100:30303" --datadir="/root/.ethereum" --rpcapi "db,personal,eth,net,web3" --rpccorsdomain="*" --networkid=53324 --rpc --rpcaddr="0.0.0.0" --ws --wsaddr="0.0.0.0" --wsorigins "*" --miner.etherbase="0x69eff55dce156926164e276ed03484672ec84fbb" --unlock "0x69eff55dce156926164e276ed03484672ec84fbb" --mine --password "/root/password" --syncmode "full"'
+    command: 'secret@splunk.example.com:9002 --datadir=~/.ethereum --rpcapi "db,personal,eth,net,web3" --rpccorsdomain="*" --networkid=53324 --rpc --rpcaddr="0.0.0.0" --ws --wsaddr="0.0.0.0" --wsorigins "*" --miner.etherbase="0x69eff55dce156926164e276ed03484672ec84fbb" --unlock "0x69eff55dce156926164e276ed03484672ec84fbb" --mine --password "/root/.ethereum/password"'
     depends_on:
       splunk.example.com:
         condition: service_healthy
-      poa.bootnode.example.com:
-        condition: service_started
+    ports:
+      - '9546:8546'
+      - '9545:8545'
 
   eth-logger-poa:
     build:
@@ -195,7 +136,6 @@ services:
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
-      - /etc/localtime:/etc/localtime:ro
     command:
       - --storage_driver=statsd
       - --storage_driver_host=splunk.example.com:8125
