@@ -22,15 +22,17 @@
       <default>getBlockByNumber</default>
       <initialValue>getBlockByNumber</initialValue>
     </input>
-    <input type="text" token="t_node">
+    <input type="dropdown" token="t_node">
       <label>Node to Query</label>
-      <default>http://127.0.0.1:8545</default>
-      <initialValue>http://127.0.0.1:8545</initialValue>
+      <default>http://172.28.2.100:8545</default>
+      <initialValue>http://172.28.2.100:8545</initialValue>
       <prefix>host=</prefix>
+      <choice value="http://172.28.2.100:8545">Poa</choice>
+      <choice value="http://172.28.1.100:8545">Pow</choice>
     </input>
     <input type="text" token="t_arg">
       <label>Arg</label>
-      <default></default>
+      <default>block=1</default>
     </input>
   </fieldset>
   <row>
