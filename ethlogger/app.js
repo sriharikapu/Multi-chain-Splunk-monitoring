@@ -183,17 +183,24 @@ function paramsToArgs(params) {
 
 async function extractABIDataFromTransaction(transaction) {
   const { hash, fromContract, toContract, contractCreated } = transaction;
-  if (!transaction.input) {
-    return;
-  }
-  try {
-    const res = abiDecoder.decodeMethod(transaction.input);
-    if (res) {
-      res.args = paramsToArgs(res.params);
-      transaction.method = res;
+  if (transaction.input) {
+    try {
+      const res = abiDecoder.decodeMethod(transaction.input);
+      if (res) {
+        res.args = paramsToArgs(res.params);
+        transaction.method = res;
+      }
+    } catch (e) {
+      console.error('Decoding failed', e);
     }
-  } catch (e) {
-    console.error('Decoding failed', e);
+  }
+
+  const receipt = await web3.eth.getTransactionReceipt(hash);
+  if (receipt.logs) {
+    const decodedLogs = abiDecoder.decodeLogs(receipt.logs);
+    if (decodedLogs) {
+      transaction.logs = decodedLogs;
+    }
   }
 }
 

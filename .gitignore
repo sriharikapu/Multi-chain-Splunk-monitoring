@@ -1,4 +1,6 @@
 node_modules
 /tmp
 /ethlogger/build
+/ethlogger/abi
 *.swp
+/dapps/truffle-test/build
