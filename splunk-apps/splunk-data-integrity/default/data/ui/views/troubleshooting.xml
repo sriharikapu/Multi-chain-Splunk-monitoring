@@ -1,0 +1,124 @@
+<form>
+  <label>Troubleshooting</label>
+  <fieldset submitButton="false">
+    <input type="time" token="field1">
+      <label></label>
+      <default>
+        <earliest>-4h@m</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Wallet and Contract Used On Startup</title>
+      <table>
+        <search>
+          <query>|rest /servicesNS/-/-/configs/conf-dataintegritysetup| table contract wallet apikey privatekey | eval apikey=substr(apikey,1,3) + "********" + substr(apikey,-3),privatekey=substr(privatekey,1,3) + "*******" + substr(privatekey,-3)</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>starthashwatcher.sh executions</title>
+      <table>
+        <search>
+          <query>index=_internal sourcetype=splunkd component=ExecProcessor message="*starthashwatcher.sh" | table _time message</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Proxy Being Used for ethereum.js</title>
+      <table>
+        <search>
+          <query>index=_internal Hashwatcher proxy source*starthashwatcher* | table _time _raw</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Recent Errors</title>
+        <search>
+          <query>index=_internal ERROR OR FAIL source=*starthashwatcher.sh</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Hashwatcher Exited</title>
+      <table>
+        <search>
+          <query>index=_internal sourcetype=exec event=exited | table _time _raw</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>New Buckets Found</title>
+      <table>
+        <search>
+          <query>index=_internal sourcetype=exec event=hashfound | table _time bucket watchedIndex hash</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Buckets Submitted to Blockchain</title>
+      <table>
+        <search>
+          <query>index=_internal sourcetype=exec event=submittinghash | table _time bucket watchedIndex hash</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>

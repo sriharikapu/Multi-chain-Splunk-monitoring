@@ -1,0 +1,242 @@
+<dashboard script="ita_infobutton:infobutton.js" stylesheet="ita_infobutton:infobutton.css">
+  <label>Hyperledger Fabric Architecture</label>
+  <row>
+    <panel>
+      <title># of HLF Hosts</title>
+      <single>
+        <search>
+          <query>index=* source="http:hyperledger_docker" | stats dc(host) as count</query>
+          <earliest>1546872420.000</earliest>
+          <latest>1546876072.000</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">100</option>
+        <option name="rangeColors">["0x006d9c","0xdc4e41"]</option>
+        <option name="rangeValues">[50]</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title># of Docker Containers</title>
+      <single>
+        <search>
+          <query>index=* source="http:hyperledger_docker" 
+| rex field=_raw "tag\":\"(?&lt;tag&gt;\w+)" 
+| stats dc(tag) as containers</query>
+          <earliest>1546872420.000</earliest>
+          <latest>1546876072.000</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="height">100</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+        <option name="rangeValues">[50]</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel id="orderer">
+      <title>Orderers</title>
+      <single>
+        <search>
+          <query>index=* source="http:hyperledger_docker" orderer
+| rex field=_raw "source\":\"(?&lt;msg_type&gt;\w+)" 
+| rex field=_raw "\"line\":\"(?&lt;line_header_type&gt;\w+)" | stats dc(container_id)</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">all</option>
+        <option name="height">75</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051", "0x0877a6", "0xf8be34", "0xf1813f", "0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+        <drilldown>
+          <set token="order">true</set>
+        </drilldown>
+      </single>
+      <html>
+        <div class="infobutton" parent="orderer" type="collapse">
+          <p>Orderer peer is considered as the central communication channel for the Hyperledger Fabric network. Orderer peer/node is responsible for consistent Ledger state accross the network. Orderer peer creates the block and delivers that to all the peers.</p>
+          <p>Orderer is built on top of a message oriented architecture. Production ready Hyperledger Fabric network uses Kafka as the Orderer implementation. Kafka is a messaging software that has high throughput fault tolerant feature.
+          </p>
+        </div>
+      </html>
+    </panel>
+    <panel id="zookeepers">
+      <title>Zookeepers</title>
+      <single>
+        <search>
+          <query>index=* source="http:hyperledger_docker" zookeeper* | stats dc(container_id)</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">75</option>
+      </single>
+      <html>
+        <div class="infobutton" parent="zookeepers" type="collapse">
+          <p>Zookeeper is a distributed key-value store, most commonly used to store metadata and handle the mechanics of clustering. It allows clients of the service (the Kafka brokers) to subscribe and have changes sent to them once they happen. This is how brokers know when to switch partition leaders. Zookeeper is also extremely fault-tolerant as it ought to be, since Kafka heavily depends on it.
+          </p>
+        </div>
+      </html>
+    </panel>
+    <panel id="kafka">
+      <title>Kafka Nodes</title>
+      <single>
+        <search>
+          <query>index=* source="http:hyperledger_docker" kafka* | stats dc(host)</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">75</option>
+      </single>
+      <html>
+        <div class="infobutton" parent="kafka" type="collapse">
+          <p>Kafka is primarily a distributed, horizontally-scalable, fault-tolerant, commit log. A commit log is basically a data structure that only appends. No modification or deletion is possible, which leads to no read/write locks, and the worst case complexity O(1). There can be multiple Kafka nodes in the blockchain network, with their corresponding Zookeeper ensemble.
+          </p>
+          <p>Kafka is probably a great thing to happen to the Hyperledger Fabric, due to its high performance. Multiple orderers use Kafka for being in sync, Kafka isn’t an orderer in itself. It just connects two orderers with a stream. Even though it supports crash tolerance, it does not offer protection against malicious nodes in the network.
+          </p>
+        </div>
+      </html>
+    </panel>
+    <panel id="cas">
+      <title>Certificate Authorities</title>
+      <single>
+        <search>
+          <query>index=* source="http:hyperledger_docker" ca1st | rex field=line "ca1st-(?&lt;ca_org&gt;\w+)" | stats dc(ca_org)</query>
+          <earliest>1546872420.000</earliest>
+          <latest>1546876072.000</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="height">75</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051", "0x0877a6", "0xf8be34", "0xf1813f", "0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+      <html>
+        <div class="infobutton" parent="cas" type="collapse">
+          <p>TBD</p>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel id="peer_anchors">
+      <title>Anchor Peers</title>
+      <single>
+        <search>
+          <query>index=* source="http:hyperledger_docker" | stats dc(host) as count | eval count=2</query>
+          <earliest>1546872420.000</earliest>
+          <latest>1546876072.000</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">75</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+      <html>
+        <div class="infobutton" parent="peer_anchors" type="collapse">
+          <p>AN ANCHOR PEER IS SPECIFIC TO AN ORGANIZATION TAKING PART IN THE CHANNEL AND ITS MAIN ROLE IS PEER DISCOVERY.</p>
+          <p>It’s a peer node on a channel that all other peers can discover and communicate with. Therefore, every participating organization in a channel has an anchor peer. Peers belonging to an organization can query this peer to discover all peers belonging to other organizations in the channel. An org can have multiple anchor peers to prevent a single point of failure.
+          </p>
+        </div>
+      </html>
+    </panel>
+    <panel id="peer_leaders">
+      <title>Leader Peers</title>
+      <single>
+        <search>
+          <query>index=* source="http:hyperledger_docker" | stats dc(host) as count | eval count=2</query>
+          <earliest>1546872420.000</earliest>
+          <latest>1546876072.000</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">75</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+      <html>
+        <div class="infobutton" parent="peer_leaders" type="collapse">
+          <p>A LEADER PEER IS RESPONSIBLE FOR GOSSIP DATA DISSEMINATION.</p>
+          <p>When an ordering service node must send a block to the peers in the channel, it sends the block to each of the leading peer associated with the organizations. The leading peer in turn distributes this block to other peers belonging to the same organization. Distribution is done using gossip protocol.
+          </p>
+        </div>
+      </html>
+    </panel>
+    <panel id="peer_others">
+      <title>Other Peers</title>
+      <single>
+        <search>
+          <query>index=* source="http:hyperledger_docker" | stats dc(host) as count | eval count=2</query>
+          <earliest>1546872420.000</earliest>
+          <latest>1546876072.000</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">75</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+      <html>
+        <div class="infobutton" parent="peer_others" type="collapse">
+          <p>A network entity that maintains a ledger and runs chaincode containers in order to perform read/write operations to the ledger. Peers are owned and maintained by members.</p>
+          
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$order$">
+      <event>
+        <search>
+          <query>index=* source="http:hyperledger_docker" orderer</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="list.drilldown">none</option>
+      </event>
+    </panel>
+  </row>
+</dashboard>

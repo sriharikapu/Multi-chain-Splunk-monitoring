@@ -32,7 +32,12 @@ services:
       - "18000:8000"
       - "18088:8088"
     volumes:
+      - ./splunk-apps/chainmon:/opt/splunk/etc/apps/chainmon:rw
       - ./splunk-apps/container-inputs:/opt/splunk/etc/apps/container-inputs:rw
+      - ./splunk-apps/ethereum_monitoring:/opt/splunk/etc/apps/ethereum_monitoring:rw
+      - ./splunk-apps/metrics_explorer:/opt/splunk/etc/apps/metrics_explorer:rw
+      - ./splunk-apps/splunk-data-integrity:/opt/splunk/etc/apps/splunk-data-integrity:rw
+      - ./splunk-apps/splunk-for-hyperledger-fabric:/opt/splunk/etc/apps/splunk-for-hyperledger-fabric:rw
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000"]
       interval: 30s
@@ -47,7 +52,7 @@ services:
         aliases:
           - pow
     entrypoint: /root/init.sh
-    command: '--datadir=~/.ethereum --rpcapi "db,personal,eth,net,web3" --rpccorsdomain="*" --networkid=59206 --rpc --rpcaddr="0.0.0.0" --ws --wsaddr="0.0.0.0" --wsorigins "*" --miner.etherbase="0x69eff55dce156926164e276ed03484672ec84fbb" --unlock "0x69eff55dce156926164e276ed03484672ec84fbb" --mine --password "/root/.ethereum/password" --ethstats ${HOSTNAME}:secret@splunk.example.com:9001'
+    command: 'secret@splunk.example.com:9001 --datadir=~/.ethereum --rpcapi "db,personal,eth,net,web3" --rpccorsdomain="*" --networkid=59206 --rpc --rpcaddr="0.0.0.0" --ws --wsaddr="0.0.0.0" --wsorigins "*" --miner.etherbase="0x69eff55dce156926164e276ed03484672ec84fbb" --unlock "0x69eff55dce156926164e276ed03484672ec84fbb" --mine --password "/root/.ethereum/password"'
     volumes:
       - ./files/keystore:/root/.ethereum/keystore
       - ./files/poa.json:/root/.ethereum/genesis.json
@@ -93,8 +98,8 @@ services:
       - ./files/password:/root/.ethereum/password
       - ./files/init.sh:/root/init.sh
     entrypoint: /root/init.sh
-    command: '--datadir=~/.ethereum --rpccorsdomain="*" --rpcapi "db,personal,eth,net,web3" --networkid=53324 --rpc --rpcaddr="0.0.0.0" --ws --wsaddr="0.0.0.0" --wsorigins "*" --miner.etherbase="0x69eff55dce156926164e276ed03484672ec84fbb" --unlock "0x69eff55dce156926164e276ed03484672ec84fbb" --mine --password "/root/.ethereum/password" --ethstats ${HOSTNAME}:secret@splunk.example.com:9001'
     logging: *default-logging
+    command: 'secret@splunk.example.com:9002 --datadir=~/.ethereum --rpcapi "db,personal,eth,net,web3" --rpccorsdomain="*" --networkid=59206 --rpc --rpcaddr="0.0.0.0" --ws --wsaddr="0.0.0.0" --wsorigins "*" --miner.etherbase="0x69eff55dce156926164e276ed03484672ec84fbb" --unlock "0x69eff55dce156926164e276ed03484672ec84fbb" --mine --password "/root/.ethereum/password"'
     depends_on:
       splunk.example.com:
         condition: service_healthy

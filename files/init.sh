@@ -5,4 +5,6 @@ if [ ! -d /root/.ethereum/geth ]; then
     echo "...done!"
 fi
 
-geth "$@"
+HOSTNAME=`hostname`
+
+geth --ethstats $HOSTNAME:"$@" 

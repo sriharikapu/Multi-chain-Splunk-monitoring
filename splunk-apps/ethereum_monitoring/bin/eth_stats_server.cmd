@@ -1,0 +1,1 @@
+@"%SPLUNK_HOME%"\bin\splunk cmd node "%~dp0\app\eth_stats_server.js" %*
