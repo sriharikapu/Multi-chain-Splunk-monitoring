@@ -9,5 +9,8 @@
   "scripts": {
     "format": "git ls-files | grep -E \"\\.(tsx?|es|jsx?|css|md|graphql)$\" | xargs prettier --write",
     "format:verify": "git ls-files | grep -E \"\\.(tsx?|es|jsx?|css|md|graphql)$\" | xargs prettier --list-different"
+  },
+  "dependencies": {
+    "openzeppelin-solidity": "^2.1.2"
   }
 }
