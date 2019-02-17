@@ -1,4 +1,5 @@
 node_modules
+!/splunk-apps/ethereum_monitoring/node_modules
 /tmp
 /ethlogger/build
 /ethlogger/abi
