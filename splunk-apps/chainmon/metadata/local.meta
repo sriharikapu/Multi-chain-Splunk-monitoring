@@ -1,7 +1,7 @@
 [views/chainmon]
 owner = admin
 version = 7.2.3
-modtime = 1550362711.424968000
+modtime = 1550421348.328869000
 
 [inputs/http%3A%2F%2Fpow]
 version = 7.2.3
