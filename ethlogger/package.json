@@ -11,7 +11,7 @@
     "unit.js": "2.0.0"
   },
   "scripts": {
-    "build": "ncc build app.js -o build",
+    "build": "ncc build -C app.js -o build",
     "start": "nodemon -e js,json -x  node app.js"
   },
   "main": "index.js",
