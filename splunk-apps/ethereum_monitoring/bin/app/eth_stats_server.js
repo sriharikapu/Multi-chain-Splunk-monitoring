@@ -58,12 +58,14 @@
         // Listen for websocket connections
         const wss = new WebSocket.Server({ port: singleInput.port });
 
-        wss.on('connection', function connection(ws) {
+        wss.on('connection', function connection(ws, req) {
+            const ip = req.connection.remoteAddress.split(":").pop();
             ws.on('message', function incoming(message) {
                 message = JSON.parse(message);
                 var curEvent = new Event({
                     stanza: name,
-                    data: Object.assign({"type":message.emit[0]},message.emit[1])
+                    data: Object.assign({"type":message.emit[0]},message.emit[1]),
+                    host: ip
                 });
                 
                 try {
