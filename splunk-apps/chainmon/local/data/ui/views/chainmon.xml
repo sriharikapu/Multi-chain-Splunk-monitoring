@@ -49,18 +49,18 @@
         <eval token="mstats_span">"span=".$value$</eval>
       </change>
     </input>
-    <input type="dropdown" token="host">
+    <input type="dropdown" token="source">
       <label>Network</label>
-      <choice value="estats_pow">Pow</choice>
-      <choice value="estats_poa">Poa</choice>
-      <default>estats_poa</default>
+      <choice value="eth_stats_server://ethstats_pow">Pow</choice>
+      <choice value="eth_stats_server://ethstats_poa">Poa</choice>
+      <default>Poa</default>
     </input>
   </fieldset>
   <row>
     <panel>
       <single>
         <search>
-          <query>index="po*" source="eth_stats_server*" host=$host$
+          <query>index="po*" source="eth_stats_server*" source="$source$"
 | stats dc(id) as Peers</query>
           <earliest>-24h@h</earliest>
           <latest>now</latest>
@@ -93,7 +93,7 @@
     <panel>
       <single>
         <search>
-          <query>index="po*" source="eth_stats_server*" host=$host$
+          <query>index="po*" source="eth_stats_server*" source="$source$"
 | rename id AS Node 
 | stats latest("stats.uptime") as uptime</query>
           <earliest>-60m@m</earliest>
@@ -127,7 +127,7 @@
     <panel>
       <single>
         <search>
-          <query>index="po*" source="eth_stats_server*"  host=$host$ | rename id AS Node   | timechart partial=f avg(latency)</query>
+          <query>index="po*" source="eth_stats_server*" source="$source$" | rename id AS Node   | timechart partial=f avg(latency)</query>
           <earliest>-1h</earliest>
           <latest>now</latest>
           <sampleRatio>1</sampleRatio>
@@ -159,7 +159,7 @@
     <panel>
       <single>
         <search>
-          <query>index="po*" sourcetype=transaction host=$host$ | stats count</query>
+          <query>index="po*" sourcetype=transaction source="$source$" | stats count</query>
           <earliest>$global_time_tok.earliest$</earliest>
           <latest>$global_time_tok.latest$</latest>
         </search>
@@ -179,7 +179,7 @@
     <panel>
       <table>
         <search>
-          <query>index="po*" source="eth_stats_server*" host=$host$ 
+          <query>index="po*" source="$source$"
 | rename id AS Node 
  
 | eventstats max(block.number) as maxBlock 
