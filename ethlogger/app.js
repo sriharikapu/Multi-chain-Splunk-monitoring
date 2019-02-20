@@ -36,36 +36,39 @@ function loadEnv() {
 loadABIs();
 const envFile = loadEnv();
 
-var config = {
-  token: process.env.SPLUNK_HEC_TOKEN,
-  url: 'https://' + process.env.SPLUNK_HOST + ':' + process.env.SPLUNK_PORT,
-};
+const GETH_URL = 'wss://dai-trace-ws.blockscout.com/ws'; // 'wss://' + process.env.GETH_WS_HOST + ':' + process.env.GETH_WS_PORT;
+const SPLUNK_HEC_URL = 'https://' + process.env.SPLUNK_HOST + ':' + process.env.SPLUNK_PORT;
 
-var gethURL = 'ws://' + process.env.GETH_WS_HOST + ':' + process.env.GETH_WS_PORT;
-
-console.log('Using geth ' + gethURL);
-console.log('Using splunk ' + config.url);
+console.log('Using geth ' + GETH_URL);
+console.log('Using splunk ' + SPLUNK_HEC_URL);
 
 // Setup the Splunk Logger
-var Logger = new SplunkLogger(config);
-
+const Logger = new SplunkLogger({
+  token: process.env.SPLUNK_HEC_TOKEN,
+  url: SPLUNK_HEC_URL,
+});
+let printLoggerErrors = true;
 Logger.error = function(err, context) {
-  console.log('error', err, 'context', context);
+  if (printLoggerErrors) {
+    console.log('error', err, 'context', context);
+  }
 };
+Logger.eventFormatter = message => message;
 
-Logger.eventFormatter = function(message, severity) {
-  var event = message;
-  return event;
-};
+const flushLogger = () =>
+  new Promise(resolve => {
+    printLoggerErrors = false;
+    Logger.flush(() => {
+      printLoggerErrors = true;
+      setTimeout(resolve, 300);
+    });
+  });
 
 // Setup the connection to geth node
-if (typeof web3 !== 'undefined') {
-  var web3 = new Web3(web3.currentProvider);
-} else {
-  web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
-}
+const web3 = new Web3(new Web3.providers.WebsocketProvider(GETH_URL));
 
 function subscribeToNewBlocks() {
+  let lastSeenBlock = 0;
   // Subscribe To any new blocks
   web3.eth
     .subscribe('newBlockHeaders', function(error, result) {
@@ -73,7 +76,17 @@ function subscribeToNewBlocks() {
     })
     .on('data', function(blockHeader) {
       console.log('Processing new block', blockHeader.number);
-      web3.eth.getBlock(blockHeader.number).then(sendBlock);
+      if (blockHeader.number > lastSeenBlock) {
+        web3.eth
+          .getBlock(blockHeader.number)
+          .then(sendBlock)
+          .catch(e => {
+            console.error('Failed to send block', e);
+          });
+        lastSeenBlock = blockHeader.number;
+      } else {
+        console.error('Ignoring already seen block', blockHeader.number);
+      }
     });
 }
 
@@ -115,13 +128,16 @@ async function getHistoricalBlocks(firstBlock, lastBlock) {
 }
 
 function sendToSplunk(payload) {
+  // console.log(payload);
   Logger.send(payload);
 }
 
 async function sendBlock(block) {
   const startTime = Date.now();
+
   let transactionCount = 0;
   let eventCount = 0;
+
   const blockPayload = {
     message: block,
     metadata: {
@@ -133,10 +149,10 @@ async function sendBlock(block) {
 
   for (const t of block.transactions) {
     const transaction = await web3.eth.getTransaction(t);
-    const transactionWithWalletTypes = await getWalletTypes(transaction);
-    extractABIDataFromTransaction(transactionWithWalletTypes);
+    extractABIDataFromTransaction(transaction);
+    const logs = await processTransactionReceipt(transaction);
     const transactionPayload = {
-      message: transactionWithWalletTypes,
+      message: transaction,
       metadata: {
         time: block.timestamp,
         sourcetype: 'transaction',
@@ -145,7 +161,6 @@ async function sendBlock(block) {
     sendToSplunk(transactionPayload);
     transactionCount++;
 
-    const logs = await processTransactionLogs(transaction);
     if (logs) {
       const { blockHash, blockNumber, hash } = transaction;
       logs.forEach((event, index) => {
@@ -180,22 +195,6 @@ async function sendBlock(block) {
   );
 }
 
-// Check if wallet is a contract
-function getWalletTypes(transaction) {
-  let toCode = '0x';
-  if (transaction.to == null) {
-    transaction.contractCreated = true;
-  } else {
-    toCode = web3.eth.getCode(transaction.to);
-  }
-  let fromCode = web3.eth.getCode(transaction.from);
-  return Promise.all([fromCode, toCode]).then(function(code) {
-    transaction.fromContract = code[0] !== '0x' ? true : false;
-    transaction.toContract = code[1] !== '0x' ? true : false;
-    return transaction;
-  });
-}
-
 function paramsToArgs(params) {
   if (params) {
     return params.reduce((res, p) => ({ ...res, [p.name]: p.value }), {});
@@ -217,22 +216,43 @@ function extractABIDataFromTransaction(transaction) {
   }
 }
 
-async function processTransactionLogs(transaction) {
-  const { hash } = transaction;
-  const receipt = await web3.eth.getTransactionReceipt(hash);
-  if (receipt.logs) {
-    const decodedLogs = abiDecoder.decodeLogs(receipt.logs);
-    if (decodedLogs) {
-      return decodedLogs.filter(l => l != null);
+async function processTransactionReceipt(transaction) {
+  const { hash, from, to } = transaction;
+
+  const [receipt, fromCode, toCode] = await Promise.all([
+    web3.eth.getTransactionReceipt(hash),
+    web3.eth.getCode(from),
+    to == null ? Promise.resolve('0x') : web3.eth.getCode(to),
+  ]);
+
+  // console.log(receipt);
+
+  transaction.fromContract = fromCode !== '0x';
+  transaction.toContract = toCode !== '0x';
+
+  if (receipt) {
+    if (receipt.status != null) {
+      transaction.status = !!+receipt.status ? 'success' : 'failed';
+    }
+    if (receipt.gasUsed != null) {
+      transaction.gasUsed = +receipt.gasUsed;
+    }
+    if (receipt.cumulativeGasUsed != null) {
+      transaction.cumulativeGasUsed = +receipt.cumulativeGasUsed;
+    }
+    if (receipt.contractAddress != null) {
+      transaction.contractAddress = receipt.contractAddress;
+    }
+    transaction.contractCreated = receipt.contractAddress != null;
+
+    if (receipt.logs) {
+      const decodedLogs = abiDecoder.decodeLogs(receipt.logs);
+      if (decodedLogs) {
+        return decodedLogs.filter(l => l != null);
+      }
     }
   }
 }
-
-const flushLogger = () =>
-  new Promise(resolve => {
-    Logger.flush();
-    setTimeout(resolve, 1000);
-  });
 
 async function main() {
   switch (process.argv[2]) {
@@ -260,13 +280,9 @@ async function main() {
       var currentHistoricalBlock;
       if (envFile.LAST_BLOCK) {
         currentHistoricalBlock = parseInt(envFile.LAST_BLOCK) + 1;
-      }
-      if (envFile.START_AT_BLOCK) {
+      } else if (envFile.START_AT_BLOCK) {
         currentHistoricalBlock = envFile.START_AT_BLOCK;
         storeNewCheckpoint('');
-      }
-      if (process.argv.length > 2) {
-        currentHistoricalBlock = parseInt(process.argv[2], 10);
       }
 
       if (currentHistoricalBlock) {
@@ -276,7 +292,7 @@ async function main() {
           currentHistoricalBlock = currentBlock - currentHistoricalBlock;
         }
         console.log('Starting with historical block', currentHistoricalBlock);
-        getHistoricalBlocks(currentHistoricalBlock, currentBlock);
+        getHistoricalBlocks(currentHistoricalBlock + 1, currentBlock);
       }
       // Keeps app running forever
       process.stdin.resume();
